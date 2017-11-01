@@ -11,7 +11,7 @@
 
 namespace think\template\driver;
 
-use think\Exception;
+use Exception;
 
 class File
 {
@@ -32,7 +32,7 @@ class File
 
         // 生成模板缓存文件
         if (false === file_put_contents($cacheFile, $content)) {
-            throw new Exception('cache write error:' . $cacheFile, 11602);
+            throw new Exception('cache write error:' . $cacheFile);
         }
     }
 
@@ -66,7 +66,7 @@ class File
             return false;
         }
 
-        if (0 != $cacheTime && $_SERVER['REQUEST_TIME'] > filemtime($cacheFile) + $cacheTime) {
+        if (0 != $cacheTime && time() > filemtime($cacheFile) + $cacheTime) {
             // 缓存是否在有效期
             return false;
         }

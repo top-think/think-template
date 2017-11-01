@@ -11,7 +11,7 @@
 
 namespace think\template;
 
-use think\Exception;
+use Exception;
 
 /**
  * ThinkPHP标签库TagLib解析基类
