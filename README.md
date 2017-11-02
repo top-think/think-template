@@ -51,3 +51,5 @@ $template->fetch('./template/test.php');
 // 渲染内容输出
 $template->display($content);
 ~~~
+
+详细用法参考[这里](https://www.kancloud.cn/manual/thinkphp5_1/354069)
