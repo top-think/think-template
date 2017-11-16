@@ -21,14 +21,14 @@
 
 ## 安装
 
-~~~
+~~~php
 composer require topthink/think-template
 ~~~
 
 ## 用法示例
 
 在根目录下创建index.php入口文件测试：
-~~~
+~~~php
 <?php
 namespace think;
 
