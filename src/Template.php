@@ -65,30 +65,20 @@ class Template
      */
     public function __construct(array $config = [])
     {
-        $this->config                 = array_merge($this->config, $config);
-        $this->config['taglib_begin'] = $this->stripPreg($this->config['taglib_begin']);
-        $this->config['taglib_end']   = $this->stripPreg($this->config['taglib_end']);
-        $this->config['tpl_begin']    = $this->stripPreg($this->config['tpl_begin']);
-        $this->config['tpl_end']      = $this->stripPreg($this->config['tpl_end']);
+        $this->config = array_merge($this->config, $config);
+
+        $this->config['taglib_begin_origin'] = $this->config['taglib_begin'];
+        $this->config['taglib_end_origin']   = $this->config['taglib_end'];
+
+        $this->config['taglib_begin'] = preg_quote($this->config['taglib_begin'], '/');
+        $this->config['taglib_end']   = preg_quote($this->config['taglib_end'], '/');
+        $this->config['tpl_begin']    = preg_quote($this->config['tpl_begin'], '/');
+        $this->config['tpl_end']      = preg_quote($this->config['tpl_end'], '/');
 
         // 初始化模板编译存储器
         $type          = $this->config['compile_type'] ? $this->config['compile_type'] : 'File';
         $class         = false !== strpos($type, '\\') ? $type : '\\think\\template\\driver\\' . ucwords($type);
         $this->storage = new $class();
-    }
-
-    /**
-     * 字符串替换 避免正则混淆
-     * @access private
-     * @param string $str
-     * @return string
-     */
-    private function stripPreg($str)
-    {
-        return str_replace(
-            ['{', '}', '(', ')', '|', '[', ']', '-', '+', '*', '.', '^', '?'],
-            ['\{', '\}', '\(', '\)', '\|', '\[', '\]', '\-', '\+', '\*', '\.', '\^', '\?'],
-            $str);
     }
 
     /**
@@ -183,7 +173,7 @@ class Template
 
         if ($template) {
 
-            $cacheFile = $this->config['cache_path'] . $this->config['cache_prefix'] . md5($template) . '.' . ltrim($this->config['cache_suffix'], '.');
+            $cacheFile = $this->config['cache_path'] . $this->config['cache_prefix'] . md5($this->config['layout_name'] . $template) . '.' . ltrim($this->config['cache_suffix'], '.');
 
             if (!$this->checkCache($cacheFile)) {
                 // 缓存无效 重新模板编译
