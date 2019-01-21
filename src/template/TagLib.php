@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2017 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -11,7 +11,8 @@
 
 namespace think\template;
 
-use Exception;
+use think\Exception;
+use think\Template;
 
 /**
  * ThinkPHP标签库TagLib解析基类
@@ -70,9 +71,9 @@ class TagLib
     /**
      * 架构函数
      * @access public
-     * @param \stdClass $template 模板引擎对象
+     * @param  Template $template 模板引擎对象
      */
-    public function __construct($template)
+    public function __construct(Template $template)
     {
         $this->tpl = $template;
     }
@@ -84,7 +85,7 @@ class TagLib
      * @param  string $lib 标签库名
      * @return void
      */
-    public function parseTag(&$content, $lib = '')
+    public function parseTag(string &$content, string $lib = ''): void
     {
         $tags = [];
         $lib  = $lib ? strtolower($lib) . ':' : '';
@@ -185,8 +186,6 @@ class TagLib
                 return $this->$method($attrs, '');
             }, $content);
         }
-
-        return;
     }
 
     /**
@@ -196,10 +195,10 @@ class TagLib
      * @param  boolean          $close 是否为闭合标签
      * @return string
      */
-    public function getRegex($tags, $close)
+    public function getRegex($tags, bool $close): string
     {
-        $begin   = $this->tpl->config('taglib_begin');
-        $end     = $this->tpl->config('taglib_end');
+        $begin   = $this->tpl->getConfig('taglib_begin');
+        $end     = $this->tpl->getConfig('taglib_end');
         $single  = strlen(ltrim($begin, '\\')) == 1 && strlen(ltrim($end, '\\')) == 1 ? true : false;
         $tagName = is_array($tags) ? implode('|', $tags) : $tags;
 
@@ -225,12 +224,12 @@ class TagLib
     /**
      * 分析标签属性 正则方式
      * @access public
-     * @param string $str 标签属性字符串
-     * @param string $name 标签名
-     * @param string $alias 别名
+     * @param  string $str 标签属性字符串
+     * @param  string $name 标签名
+     * @param  string $alias 别名
      * @return array
      */
-    public function parseAttr($str, $name, $alias = '')
+    public function parseAttr(string $str, string $name, string $alias = ''): array
     {
         $regex  = '/\s+(?>(?P<name>[\w-]+)\s*)=(?>\s*)([\"\'])(?P<value>(?:(?!\\2).)*)\\2/is';
         $result = [];
@@ -275,8 +274,8 @@ class TagLib
             if (!empty($this->tags[$name]['expression'])) {
                 static $_taglibs;
                 if (!isset($_taglibs[$name])) {
-                    $_taglibs[$name][0] = strlen($this->tpl->config('taglib_begin_origin') . $name);
-                    $_taglibs[$name][1] = strlen($this->tpl->config('taglib_end_origin'));
+                    $_taglibs[$name][0] = strlen($this->tpl->getConfig('taglib_begin_origin') . $name);
+                    $_taglibs[$name][1] = strlen($this->tpl->getConfig('taglib_end_origin'));
                 }
                 $result['expression'] = substr($str, $_taglibs[$name][0], -$_taglibs[$name][1]);
                 // 清除自闭合标签尾部/
@@ -296,7 +295,7 @@ class TagLib
      * @param  string $condition 表达式标签内容
      * @return string
      */
-    public function parseCondition($condition)
+    public function parseCondition(string $condition): string
     {
         if (strpos($condition, ':')) {
             $condition = ' ' . substr(strstr($condition, ':'), 1);
@@ -305,17 +304,16 @@ class TagLib
         $condition = str_ireplace(array_keys($this->comparison), array_values($this->comparison), $condition);
         $this->tpl->parseVar($condition);
 
-        // $this->tpl->parseVarFunction($condition); // XXX: 此句能解析表达式中用|分隔的函数，但表达式中如果有|、||这样的逻辑运算就产生了歧异
         return $condition;
     }
 
     /**
      * 自动识别构建变量
      * @access public
-     * @param string    $name       变量描述
+     * @param  string    $name       变量描述
      * @return string
      */
-    public function autoBuildVar(&$name)
+    public function autoBuildVar(string &$name): string
     {
         $flag = substr($name, 0, 1);
 
@@ -344,8 +342,7 @@ class TagLib
      * @access public
      * @return array
      */
-    // 获取标签定义
-    public function getTags()
+    public function getTags(): array
     {
         return $this->tags;
     }
