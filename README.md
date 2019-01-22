@@ -1,6 +1,6 @@
 # think-template
 
-从ThinkPHP5.1独立出来的编译型模板引擎
+基于XML和标签库的编译型模板引擎
 
 ## 主要特性
 
