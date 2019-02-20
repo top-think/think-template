@@ -11,7 +11,7 @@
 
 namespace think\template;
 
-use think\Exception;
+use Exception;
 use think\Template;
 
 /**

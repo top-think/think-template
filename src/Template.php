@@ -12,7 +12,7 @@ declare (strict_types = 1);
 
 namespace think;
 
-use think\exception\TemplateNotFoundException;
+use think\template\exception\TemplateNotFoundException;
 
 /**
  * ThinkPHP分离出来的模板引擎

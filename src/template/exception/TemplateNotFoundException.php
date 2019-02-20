@@ -9,7 +9,7 @@
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
-namespace think\exception;
+namespace think\template\exception;
 
 class TemplateNotFoundException extends \RuntimeException
 {
