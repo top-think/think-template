@@ -498,7 +498,7 @@ class Template
                     unset($array['file']);
 
                     // 分析模板文件名并读取内容
-                    $parseStr = $this->parseTemplateName($file);
+                    $parseStr = $this->parseTemplateName($file, $this->config('view_path'));
 
                     foreach ($array as $k => $v) {
                         // 以$开头字符串转换成模板变量
@@ -1116,12 +1116,13 @@ class Template
     }
 
     /**
-     * 分析加载的模板文件并读取内容 支持多个模板文件读取
+     * * 分析加载的模板文件并读取内容 支持多个模板文件读取
      * @access private
-     * @param  string $templateName 模板文件名
+     * @param string $templateName 模板文件名
+     * @param string $prefixPath   追加路径前缀
      * @return string
      */
-    private function parseTemplateName($templateName)
+    private function parseTemplateName($templateName, $prefixPath = null)
     {
         $array    = explode(',', $templateName);
         $parseStr = '';
@@ -1129,6 +1130,11 @@ class Template
         foreach ($array as $templateName) {
             if (empty($templateName)) {
                 continue;
+            }
+
+            /** 追加路径前缀 */
+            if (!empty($prefixPath)) {
+                $templateName = $prefixPath. $templateName;
             }
 
             if (0 === strpos($templateName, '$')) {
