@@ -1171,11 +1171,10 @@ class Template
                 $template = str_replace(['/', ':'], $this->config['view_depr'], substr($template, 1));
             }
 
-            if ($this->config['view_base']) {
-                $app  = isset($app) ? $app : '';
-                $path = $this->config['view_base'] . ($app ? $app . DIRECTORY_SEPARATOR : '');
-            } else {
+            if ($this->config['view_path'] && !isset($app)) {
                 $path = $this->config['view_path'];
+            } else {
+                $path = $this->config['view_base'] . (isset($app) ? $app . DIRECTORY_SEPARATOR : '');
             }
 
             $template = $path . $template . '.' . ltrim($this->config['view_suffix'], '.');
