@@ -68,6 +68,12 @@ class Template
     private $literal = [];
 
     /**
+     * 扩展解析规则
+     * @var array
+     */
+    private $extend = [];
+
+    /**
      * 模板包含信息
      * @var array
      */
@@ -174,6 +180,18 @@ class Template
         }
 
         return $data;
+    }
+
+    /**
+     * 扩展模板解析规则
+     * @access public
+     * @param  string    $rule 解析规则
+     * @param  callable  $callback 解析规则
+     * @return void
+     */
+    public function extend(string $rule, callable $callback = null)
+    {
+        $this->extend[$rule] = $callback;
     }
 
     /**
@@ -919,22 +937,12 @@ class Template
                         $vars  = explode('.', $match[0]);
                         $first = array_shift($vars);
 
-                        if ('$Think' == $first) {
+                        if (isset($this->extend[$first])) {
+                            $callback = $this->extend[$first];
+                            $parseStr = $callback($vars);
+                        } elseif ('$Think' == $first) {
                             // 所有以Think.打头的以特殊变量对待 无需模板赋值就可以输出
                             $parseStr = $this->parseThinkVar($vars);
-                        } elseif ('$Request' == $first) {
-                            // 获取Request请求对象参数
-                            $method = array_shift($vars);
-                            if (!empty($vars)) {
-                                $params = implode('.', $vars);
-                                if ('true' != $params) {
-                                    $params = '\'' . $params . '\'';
-                                }
-                            } else {
-                                $params = '';
-                            }
-
-                            $parseStr = 'app(\'request\')->' . $method . '(' . $params . ')';
                         } else {
                             switch ($this->config['tpl_var_identify']) {
                                 case 'array': // 识别为数组
