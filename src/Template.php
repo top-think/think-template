@@ -12,6 +12,8 @@ declare (strict_types = 1);
 
 namespace think;
 
+use Exception;
+use Psr\SimpleCache\CacheInterface;
 use think\template\exception\TemplateNotFoundException;
 
 /**
@@ -86,6 +88,12 @@ class Template
     protected $storage;
 
     /**
+     * 查询缓存对象
+     * @var CacheInterface
+     */
+    protected $cache;
+
+    /**
      * 架构函数
      * @access public
      * @param  array $config
@@ -131,6 +139,17 @@ class Template
     public function __set($name, $value)
     {
         $this->config[$name] = $value;
+    }
+
+    /**
+     * 设置缓存对象
+     * @access public
+     * @param  CacheInterface $cache 缓存对象
+     * @return void
+     */
+    public function setCache(CacheInterface $cache): void
+    {
+        $this->cache = $cache;
     }
 
     /**
@@ -185,11 +204,11 @@ class Template
     /**
      * 扩展模板解析规则
      * @access public
-     * @param  string    $rule 解析规则
-     * @param  callable  $callback 解析规则
+     * @param  string   $rule 解析规则
+     * @param  callable $callback 解析规则
      * @return void
      */
-    public function extend(string $rule, callable $callback = null)
+    public function extend(string $rule, callable $callback = null): void
     {
         $this->extend[$rule] = $callback;
     }
@@ -197,14 +216,22 @@ class Template
     /**
      * 渲染模板文件
      * @access public
-     * @param  string    $template 模板文件
-     * @param  array     $vars 模板变量
+     * @param  string $template 模板文件
+     * @param  array  $vars 模板变量
      * @return void
      */
     public function fetch(string $template, array $vars = []): void
     {
         if ($vars) {
             $this->data = array_merge($this->data, $vars);
+        }
+
+        if (!empty($this->config['cache_id']) && $this->config['display_cache'] && $this->cache) {
+            // 读取渲染缓存
+            if ($this->cache->has($this->config['cache_id'])) {
+                echo $this->cache->get($this->config['cache_id']);
+                return;
+            }
         }
 
         $template = $this->parseTemplateFile($template);
@@ -228,8 +255,29 @@ class Template
             // 获取并清空缓存
             $content = ob_get_clean();
 
+            if (!empty($this->config['cache_id']) && $this->config['display_cache'] && $this->cache) {
+                // 缓存页面输出
+                $this->cache->set($this->config['cache_id'], $content, $this->config['cache_time']);
+            }
+
             echo $content;
         }
+    }
+
+    /**
+     * 检查编译缓存是否存在
+     * @access public
+     * @param  string $cacheId 缓存的id
+     * @return boolean
+     */
+    public function isCache(string $cacheId): bool
+    {
+        if ($cacheId && $this->cache && $this->config['display_cache']) {
+            // 缓存页面输出
+            return $this->cache->has($cacheId);
+        }
+
+        return false;
     }
 
     /**
@@ -326,8 +374,8 @@ class Template
     /**
      * 编译模板文件内容
      * @access private
-     * @param  string    $content 模板内容
-     * @param  string    $cacheFile 缓存文件名
+     * @param  string $content 模板内容
+     * @param  string $cacheFile 缓存文件名
      * @return void
      */
     private function compiler(string &$content, string $cacheFile): void
@@ -451,7 +499,7 @@ class Template
      * @access private
      * @param  string $content 要解析的模板内容
      * @return void
-     * @throws \think\Exception
+     * @throws Exception
      */
     private function parsePhp(string &$content): void
     {
@@ -972,8 +1020,8 @@ class Template
      * 对模板中使用了函数的变量进行解析
      * 格式 {$varname|function1|function2=arg1,arg2}
      * @access public
-     * @param  string    $varStr     变量字符串
-     * @param  bool      $autoescape 自动转义
+     * @param  string $varStr     变量字符串
+     * @param  bool   $autoescape 自动转义
      * @return string
      */
     public function parseVarFunction(string &$varStr, bool $autoescape = true): string
