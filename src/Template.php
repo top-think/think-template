@@ -221,8 +221,9 @@ class Template
      */
     public function fetch(string $template, array $vars = []): void
     {
-
-        $data = $vars ? array_merge($this->data, $vars) : $this->data;
+        if ($vars) {
+            $this->data = array_merge($this->data, $vars);
+        }
 
         if (!empty($this->config['cache_id']) && $this->config['display_cache'] && $this->cache) {
             // 读取渲染缓存
@@ -248,7 +249,7 @@ class Template
             ob_implicit_flush(0);
 
             // 读取编译存储
-            $this->storage->read($cacheFile, $data);
+            $this->storage->read($cacheFile, $this->data);
 
             // 获取并清空缓存
             $content = ob_get_clean();
@@ -287,7 +288,9 @@ class Template
      */
     public function display(string $content, array $vars = []): void
     {
-        $data = $vars ? array_merge($this->data, $vars) : $this->data;
+        if ($vars) {
+            $this->data = array_merge($this->data, $vars);
+        }
 
         $cacheFile = $this->config['cache_path'] . $this->config['cache_prefix'] . md5($content) . '.' . ltrim($this->config['cache_suffix'], '.');
 
@@ -297,7 +300,7 @@ class Template
         }
 
         // 读取编译存储
-        $this->storage->read($cacheFile, $data);
+        $this->storage->read($cacheFile, $this->data);
     }
 
     /**
