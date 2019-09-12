@@ -1121,54 +1121,42 @@ class Template
         $type  = strtoupper(trim(array_shift($vars)));
         $param = implode('.', $vars);
 
-        if ($vars) {
-            switch ($type) {
-                case 'SERVER':
-                    $parseStr = '$_SERVER[\'' . $param . '\']';
-                    break;
-                case 'GET':
-                    $parseStr = '$_GET[\'' . $param . '\']';
-                    break;
-                case 'POST':
-                    $parseStr = '$_POST[\'' . $param . '\']';
-                    break;
-                case 'COOKIE':
-                    $parseStr = '$_COOKIE[\'' . $param . '\']';
-                    break;
-                case 'SESSION':
-                    $parseStr = '$_SESSION[\'' . $param . '\']';
-                    break;
-                case 'ENV':
-                    $parseStr = '$_ENV[\'' . $param . '\']';
-                    break;
-                case 'REQUEST':
-                    $parseStr = '$_REQUEST[\'' . $param . '\']';
-                    break;
-                case 'CONST':
-                    $parseStr = strtoupper($param);
-                    break;
-                default:
-                    $parseStr = '\'\'';
-                    break;
-            }
-        } else {
-            switch ($type) {
-                case 'NOW':
-                    $parseStr = "date('Y-m-d g:i a',time())";
-                    break;
-                case 'LDELIM':
-                    $parseStr = '\'' . ltrim($this->config['tpl_begin'], '\\') . '\'';
-                    break;
-                case 'RDELIM':
-                    $parseStr = '\'' . ltrim($this->config['tpl_end'], '\\') . '\'';
-                    break;
-                default:
-                    if (defined($type)) {
-                        $parseStr = $type;
-                    } else {
-                        $parseStr = '';
-                    }
-            }
+        switch ($type) {
+            case 'SERVER':
+                $parseStr = '$_SERVER[\'' . $param . '\']';
+                break;
+            case 'GET':
+                $parseStr = '$_GET[\'' . $param . '\']';
+                break;
+            case 'POST':
+                $parseStr = '$_POST[\'' . $param . '\']';
+                break;
+            case 'COOKIE':
+                $parseStr = '$_COOKIE[\'' . $param . '\']';
+                break;
+            case 'SESSION':
+                $parseStr = '$_SESSION[\'' . $param . '\']';
+                break;
+            case 'ENV':
+                $parseStr = '$_ENV[\'' . $param . '\']';
+                break;
+            case 'REQUEST':
+                $parseStr = '$_REQUEST[\'' . $param . '\']';
+                break;
+            case 'CONST':
+                $parseStr = strtoupper($param);
+                break;
+            case 'NOW':
+                $parseStr = "date('Y-m-d g:i a',time())";
+                break;
+            case 'LDELIM':
+                $parseStr = '\'' . ltrim($this->config['tpl_begin'], '\\') . '\'';
+                break;
+            case 'RDELIM':
+                $parseStr = '\'' . ltrim($this->config['tpl_end'], '\\') . '\'';
+                break;
+            default:
+                $parseStr = defined($type) ? $type : '\'\'';
         }
 
         return $parseStr;
