@@ -987,6 +987,9 @@ class Template
                         if (isset($this->extend[$first])) {
                             $callback = $this->extend[$first];
                             $parseStr = $callback($vars);
+                        } elseif ('$Request' == $first) {
+                            // 输出请求变量
+                            $parseStr = $this->parseRequestVar($vars);
                         } elseif ('$Think' == $first) {
                             // 所有以Think.打头的以特殊变量对待 无需模板赋值就可以输出
                             $parseStr = $this->parseThinkVar($vars);
@@ -1110,13 +1113,13 @@ class Template
     }
 
     /**
-     * 特殊模板变量解析
-     * 格式 以 $Think. 打头的变量属于特殊模板变量
+     * 请求变量解析
+     * 格式 以 $Request. 打头的变量属于请求变量
      * @access public
      * @param  array $vars 变量数组
      * @return string
      */
-    public function parseThinkVar(array $vars): string
+    public function parseRequestVar(array $vars): string
     {
         $type  = strtoupper(trim(array_shift($vars)));
         $param = implode('.', $vars);
@@ -1143,6 +1146,26 @@ class Template
             case 'REQUEST':
                 $parseStr = '$_REQUEST[\'' . $param . '\']';
                 break;
+            default:
+                $parseStr = '\'\'';
+        }
+
+        return $parseStr;
+    }
+
+    /**
+     * 特殊模板变量解析
+     * 格式 以 $Think. 打头的变量属于特殊模板变量
+     * @access public
+     * @param  array $vars 变量数组
+     * @return string
+     */
+    public function parseThinkVar(array $vars): string
+    {
+        $type  = strtoupper(trim(array_shift($vars)));
+        $param = implode('.', $vars);
+
+        switch ($type) {
             case 'CONST':
                 $parseStr = strtoupper($param);
                 break;
