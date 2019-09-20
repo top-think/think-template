@@ -14,7 +14,6 @@ namespace think;
 
 use Exception;
 use Psr\SimpleCache\CacheInterface;
-use think\template\exception\TemplateNotFoundException;
 
 /**
  * ThinkPHP分离出来的模板引擎
@@ -132,8 +131,8 @@ class Template
     /**
      * 模板引擎参数赋值
      * @access public
-     * @param  mixed $name
-     * @param  mixed $value
+     * @param  string $name
+     * @param  mixed  $value
      */
     public function __set($name, $value)
     {
@@ -282,8 +281,8 @@ class Template
     /**
      * 渲染模板内容
      * @access public
-     * @param  string    $content 模板内容
-     * @param  array     $vars 模板变量
+     * @param  string $content 模板内容
+     * @param  array  $vars 模板变量
      * @return void
      */
     public function display(string $content, array $vars = []): void
@@ -306,8 +305,8 @@ class Template
     /**
      * 设置布局
      * @access public
-     * @param  mixed     $name 布局模板名称 false 则关闭布局
-     * @param  string    $replace 布局模板内容替换标识
+     * @param  mixed  $name 布局模板名称 false 则关闭布局
+     * @param  string $replace 布局模板内容替换标识
      * @return $this
      */
     public function layout($name, string $replace = '')
@@ -1221,7 +1220,7 @@ class Template
      * 解析模板文件名
      * @access private
      * @param  string $template 文件名
-     * @return string|false
+     * @return string
      */
     private function parseTemplateFile(string $template): string
     {
@@ -1243,7 +1242,7 @@ class Template
             return $template;
         }
 
-        throw new TemplateNotFoundException('template not exists:' . $template, $template);
+        throw new Exception('template not exists:' . $template);
     }
 
     /**
