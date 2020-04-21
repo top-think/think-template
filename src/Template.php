@@ -1231,14 +1231,17 @@ class Template
     private function parseTemplateFile(string $template): string
     {
         if ('' == pathinfo($template, PATHINFO_EXTENSION)) {
-
+            if (strpos($template, '@')) {
+                list($module, $template) = explode('@', $template);
+            }
             if (0 !== strpos($template, '/')) {
                 $template = str_replace(['/', ':'], $this->config['view_depr'], $template);
             } else {
                 $template = str_replace(['/', ':'], $this->config['view_depr'], substr($template, 1));
             }
 
-            $template = $this->config['view_path'] . $template . '.' . ltrim($this->config['view_suffix'], '.');
+            $suffix = isset($module) ? base_path() . $module . $this->config['view_depr'] . $this->config['view_dir_name'] . $this->config['view_depr'] : $this->config['view_path'];
+            $template =  $suffix . $template . '.' . ltrim($this->config['view_suffix'], '.');
         }
 
         if (is_file($template)) {
