@@ -878,7 +878,6 @@ class Template
                                 }
                             } else {
                                 if (isset($array[1])) {
-                                    $express = true;
                                     $this->parseVar($array[2]);
                                     $express = $name . $array[1] . $array[2];
                                 } else {
@@ -1169,24 +1168,13 @@ class Template
         $type  = strtoupper(trim(array_shift($vars)));
         $param = implode('.', $vars);
 
-        switch ($type) {
-            case 'CONST':
-                $parseStr = strtoupper($param);
-                break;
-            case 'NOW':
-                $parseStr = "date('Y-m-d g:i a',time())";
-                break;
-            case 'LDELIM':
-                $parseStr = '\'' . ltrim($this->config['tpl_begin'], '\\') . '\'';
-                break;
-            case 'RDELIM':
-                $parseStr = '\'' . ltrim($this->config['tpl_end'], '\\') . '\'';
-                break;
-            default:
-                $parseStr = defined($type) ? $type : '\'\'';
-        }
-
-        return $parseStr;
+        return match ($type) {
+            'CONST'  => strtoupper($param),
+            'NOW'    => "date('Y-m-d g:i a',time())",
+            'LDELIM' => '\'' . ltrim($this->config['tpl_begin'], '\\') . '\'',
+            'RDELIM' => '\'' . ltrim($this->config['tpl_end'], '\\') . '\'',
+            default  => defined($type) ? $type : '\'\'',
+        };
     }
 
     /**
@@ -1271,7 +1259,7 @@ class Template
         } else {
             $begin  = $this->config['taglib_begin'];
             $end    = $this->config['taglib_end'];
-            $single = strlen(ltrim($begin, '\\')) == 1 && strlen(ltrim($end, '\\')) == 1 ? true : false;
+            $single = strlen(ltrim($begin, '\\')) == 1 && strlen(ltrim($end, '\\')) == 1;
 
             switch ($tagName) {
                 case 'block':
