@@ -112,7 +112,7 @@ class Template
 
         // 初始化模板编译存储器
         $type  = $this->config['compile_type'] ? $this->config['compile_type'] : 'File';
-        $class = false !== strpos($type, '\\') ? $type : '\\think\\template\\driver\\' . ucwords($type);
+        $class = str_contains($type, '\\') ? $type : '\\think\\template\\driver\\' . ucwords($type);
 
         $this->storage = new $class();
     }
@@ -386,7 +386,7 @@ class Template
     {
         // 判断是否启用布局
         if ($this->config['layout_on']) {
-            if (false !== strpos($content, '{__NOLAYOUT__}')) {
+            if (str_contains($content, '{__NOLAYOUT__}')) {
                 // 可以单独定义不使用布局
                 $content = str_replace('{__NOLAYOUT__}', '', $content);
             } else {
@@ -567,7 +567,7 @@ class Template
 
                     foreach ($array as $k => $v) {
                         // 以$开头字符串转换成模板变量
-                        if (0 === strpos($v, '$')) {
+                        if (str_starts_with($v, '$')) {
                             $v = $this->get(substr($v, 1));
                         }
 
@@ -790,7 +790,7 @@ class Template
      */
     public function parseTagLib(string $tagLib, string &$content, bool $hide = false): void
     {
-        if (false !== strpos($tagLib, '\\')) {
+        if (str_contains($tagLib, '\\')) {
             // 支持指定标签库的命名空间
             $className = $tagLib;
             $tagLib    = substr($tagLib, strrpos($tagLib, '\\') + 1);
@@ -889,7 +889,7 @@ class Template
 
                                 if (in_array($first, ['?', '=', ':'])) {
                                     $str = trim(substr($str, 1));
-                                    if ('$' == substr($str, 0, 1)) {
+                                    if (str_starts_with($str, '$')) {
                                         $str = $this->parseVarFunction($str);
                                     }
                                 }
@@ -913,8 +913,8 @@ class Template
                                             // {$varname ? 'a' : 'b'} $varname为真时输出a,否则输出b
                                             $array = explode(':', $str, 2);
 
-                                            $array[0] = '$' == substr(trim($array[0]), 0, 1) ? $this->parseVarFunction($array[0]) : $array[0];
-                                            $array[1] = '$' == substr(trim($array[1]), 0, 1) ? $this->parseVarFunction($array[1]) : $array[1];
+                                            $array[0] = str_starts_with(trim($array[0]), '$') ? $this->parseVarFunction($array[0]) : $array[0];
+                                            $array[1] = str_starts_with(trim($array[1]), '$') ? $this->parseVarFunction($array[1]) : $array[1];
 
                                             $str = implode(' : ', $array);
                                         }
@@ -948,7 +948,7 @@ class Template
                     case '/':
                         // 注释标签
                         $flag2 = substr($str, 1, 1);
-                        if ('/' == $flag2 || ('*' == $flag2 && substr(rtrim($str), -2) == '*/')) {
+                        if ('/' == $flag2 || ('*' == $flag2 && str_ends_with(rtrim($str), '*/'))) {
                             $str = '';
                         }
                         break;
@@ -1034,7 +1034,7 @@ class Template
      */
     public function parseVarFunction(string &$varStr, bool $autoescape = true): string
     {
-        if (!$autoescape && false === strpos($varStr, '|')) {
+        if (!$autoescape && !str_contains($varStr, '|')) {
             return $varStr;
         } elseif ($autoescape && !preg_match('/\|(\s)?raw(\||\s)?/i', $varStr)) {
             $varStr .= '|' . $this->config['default_filter'];
@@ -1090,7 +1090,7 @@ class Template
                         $name = 'sprintf(' . $args[1] . ',' . $name . ')';
                         break;
                     case 'default': // 特殊模板函数
-                        if (false === strpos($name, '(')) {
+                        if (!str_contains($name, '(')) {
                             $name = '(isset(' . $name . ') && (' . $name . ' !== \'\')?' . $name . ':' . $args[1] . ')';
                         } else {
                             $name = '(' . $name . ' ?: ' . $args[1] . ')';
@@ -1098,7 +1098,7 @@ class Template
                         break;
                     default: // 通用模板函数
                         if (isset($args[1])) {
-                            if (strstr($args[1], '###')) {
+                            if (str_contains($args[1], '###')) {
                                 $args[1] = str_replace('###', $name, $args[1]);
                                 $name    = "$fun($args[1])";
                             } else {
@@ -1207,7 +1207,7 @@ class Template
                 continue;
             }
 
-            if (0 === strpos($templateName, '$')) {
+            if (str_starts_with($templateName, '$')) {
                 //支持加载变量文件名
                 $templateName = $this->get(substr($templateName, 1));
             }
@@ -1233,7 +1233,7 @@ class Template
     {
         if ('' == pathinfo($template, PATHINFO_EXTENSION)) {
 
-            if (0 !== strpos($template, '/')) {
+            if (!str_starts_with($template, '/')) {
                 $template = str_replace(['/', ':'], $this->config['view_depr'], $template);
             } else {
                 $template = str_replace(['/', ':'], $this->config['view_depr'], substr($template, 1));
