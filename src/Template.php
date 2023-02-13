@@ -14,6 +14,7 @@ namespace think;
 
 use Exception;
 use Psr\SimpleCache\CacheInterface;
+use think\template\contract\DriverInterface;
 
 /**
  * ThinkPHP分离出来的模板引擎
@@ -26,13 +27,13 @@ class Template
      * 模板变量
      * @var array
      */
-    protected $data = [];
+    protected array $data = [];
 
     /**
      * 模板配置参数
      * @var array
      */
-    protected $config = [
+    protected array $config = [
         'view_path'          => '', // 模板路径
         'view_suffix'        => 'html', // 默认模板文件后缀
         'view_depr'          => DIRECTORY_SEPARATOR,
@@ -66,31 +67,31 @@ class Template
      * 保留内容信息
      * @var array
      */
-    private $literal = [];
+    private array $literal = [];
 
     /**
      * 扩展解析规则
      * @var array
      */
-    private $extend = [];
+    private array $extend = [];
 
     /**
      * 模板包含信息
      * @var array
      */
-    private $includeFile = [];
+    private array $includeFile = [];
 
     /**
      * 模板存储对象
-     * @var object
+     * @var DriverInterface
      */
-    protected $storage;
+    protected DriverInterface $storage;
 
     /**
      * 查询缓存对象
      * @var CacheInterface
      */
-    protected $cache;
+    protected CacheInterface $cache;
 
     /**
      * 架构函数
@@ -122,7 +123,7 @@ class Template
      * @param  array $vars 模板变量
      * @return $this
      */
-    public function assign(array $vars = [])
+    public function assign(array $vars = []): static
     {
         $this->data = array_merge($this->data, $vars);
         return $this;
@@ -131,10 +132,10 @@ class Template
     /**
      * 模板引擎参数赋值
      * @access public
-     * @param  string $name
-     * @param  mixed  $value
+     * @param string $name
+     * @param  mixed $value
      */
-    public function __set($name, $value)
+    public function __set(string $name, $value)
     {
         $this->config[$name] = $value;
     }
@@ -156,7 +157,7 @@ class Template
      * @param  array $config
      * @return $this
      */
-    public function config(array $config)
+    public function config(array $config): static
     {
         $this->config = array_merge($this->config, $config);
         return $this;
@@ -202,8 +203,8 @@ class Template
     /**
      * 扩展模板解析规则
      * @access public
-     * @param  string   $rule 解析规则
-     * @param  callable $callback 解析规则
+     * @param string        $rule     解析规则
+     * @param callable|null $callback 解析规则回调
      * @return void
      */
     public function extend(string $rule, callable $callback = null): void
@@ -305,11 +306,11 @@ class Template
     /**
      * 设置布局
      * @access public
-     * @param  mixed  $name 布局模板名称 false 则关闭布局
-     * @param  string $replace 布局模板内容替换标识
+     * @param bool|string $name    布局模板名称 false 则关闭布局
+     * @param string      $replace 布局模板内容替换标识
      * @return $this
      */
-    public function layout($name, string $replace = '')
+    public function layout(bool|string $name, string $replace = ''): static
     {
         if (false === $name) {
             // 关闭布局
@@ -332,8 +333,7 @@ class Template
     }
 
     /**
-     * 检查编译缓存是否有效
-     * 如果无效则需要重新编译
+     * 检查编译缓存是否有效，如果无效则需要重新编译
      * @access private
      * @param  string $cacheFile 缓存文件名
      * @return bool
@@ -762,13 +762,12 @@ class Template
     }
 
     /**
-     * 搜索模板页面中包含的TagLib库
-     * 并返回列表
+     * 搜索模板页面中包含的 TagLib 库，并返回列表
      * @access private
      * @param  string $content 模板内容
-     * @return array|null
+     * @return array
      */
-    private function getIncludeTagLib(string &$content)
+    private function getIncludeTagLib(string &$content): array
     {
         // 搜索是否有TagLib标签
         if (preg_match($this->getRegex('taglib'), $content, $matches)) {
@@ -777,6 +776,8 @@ class Template
 
             return explode(',', $matches['name']);
         }
+
+        return [];
     }
 
     /**
@@ -805,8 +806,8 @@ class Template
     /**
      * 分析标签属性
      * @access public
-     * @param  string   $str 属性字符串
-     * @param  string   $name 不为空时返回指定的属性名
+     * @param string      $str  属性字符串
+     * @param string|null $name 不为空时返回指定的属性名
      * @return array
      */
     public function parseAttr(string $str, string $name = null): array
