@@ -89,9 +89,9 @@ class Template
 
     /**
      * 查询缓存对象
-     * @var CacheInterface
+     * @var CacheInterface|null
      */
-    protected CacheInterface $cache;
+    protected ?CacheInterface $cache;
 
     /**
      * 架构函数
@@ -225,12 +225,10 @@ class Template
             $this->data = array_merge($this->data, $vars);
         }
 
-        if (!empty($this->config['cache_id']) && $this->config['display_cache'] && $this->cache) {
+        if ($this->isCache($this->config['cache_id'])) {
             // 读取渲染缓存
-            if ($this->cache->has($this->config['cache_id'])) {
-                echo $this->cache->get($this->config['cache_id']);
-                return;
-            }
+            echo $this->cache->get($this->config['cache_id']);
+            return;
         }
 
         $template = $this->parseTemplateFile($template);
@@ -254,7 +252,7 @@ class Template
             // 获取并清空缓存
             $content = ob_get_clean();
 
-            if (!empty($this->config['cache_id']) && $this->config['display_cache'] && $this->cache) {
+            if (!empty($this->config['cache_id']) && $this->config['display_cache'] && null !== $this->cache) {
                 // 缓存页面输出
                 $this->cache->set($this->config['cache_id'], $content, $this->config['cache_time']);
             }
@@ -271,7 +269,7 @@ class Template
      */
     public function isCache(string $cacheId): bool
     {
-        if ($cacheId && $this->cache && $this->config['display_cache']) {
+        if ($cacheId && null !== $this->cache && $this->config['display_cache']) {
             // 缓存页面输出
             return $this->cache->has($cacheId);
         }
