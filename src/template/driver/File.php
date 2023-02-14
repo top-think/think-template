@@ -12,8 +12,9 @@
 namespace think\template\driver;
 
 use Exception;
+use think\template\contract\DriverInterface;
 
-class File
+class File implements DriverInterface
 {
     protected $cacheFile;
 
