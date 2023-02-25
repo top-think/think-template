@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2023 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -111,7 +111,7 @@ class Template
         $this->config['tpl_end']      = preg_quote($this->config['tpl_end'], '/');
 
         // 初始化模板编译存储器
-        $type  = $this->config['compile_type'] ? $this->config['compile_type'] : 'File';
+        $type  = $this->config['compile_type'] ?: 'File';
         $class = str_contains($type, '\\') ? $type : '\\think\\template\\driver\\' . ucwords($type);
 
         $this->storage = new $class();
