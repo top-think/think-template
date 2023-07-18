@@ -91,6 +91,13 @@ class Template
      * @var CacheInterface
      */
     protected $cache;
+    
+    /**
+	 * 扩展指令解析规则
+	 *
+	 * @var array
+	 */
+	protected $directive = [];
 
     /**
      * 架构函数
@@ -210,6 +217,18 @@ class Template
     {
         $this->extend[$rule] = $callback;
     }
+    
+    /**
+	 * 扩展模板指令解析规则
+	 *
+	 * @access public
+	 * @param string        $rule 解析规则
+	 * @param callable|null $callback 解析规则
+	 * @return void
+	 */
+	public function directive(string $rule, callable $callback = null):void{
+		$this->directive[$rule] = $callback;
+	}
 
     /**
      * 渲染模板文件
@@ -497,6 +516,9 @@ class Template
 
         // 解析普通模板标签 {$tagName}
         $this->parseTag($content);
+        
+        // 解析特殊指令
+        
 
         // 还原被替换的Literal标签
         $this->parseLiteral($content, true);
@@ -966,6 +988,24 @@ class Template
 
             unset($matches);
         }
+        
+        // 解析特殊指令，如：@json()
+        $sRegex = $this->getRegex('@');
+		if(preg_match_all($sRegex, $content, $matches, PREG_SET_ORDER)){
+			foreach($matches as $match){
+				$directive = stripslashes($match[1]);
+				
+				// 指令
+				if(isset($this->directive[$directive])){
+					$callback = $this->directive[$directive];
+					$parseStr = $callback($match[2]);
+					
+					$content = str_replace($match[0], $parseStr, $content);
+				}
+			}
+			
+			unset($matches);
+		}
     }
 
     /**
@@ -1273,7 +1313,10 @@ class Template
             } else {
                 $regex = $begin . '((?:[\$]{1,2}[a-wA-w_]|[\:\~][\$a-wA-w_]|[+]{2}[\$][a-wA-w_]|[-]{2}[\$][a-wA-w_]|\/[\*\/])(?>(?:(?!' . $end . ').)*))' . $end;
             }
-        } else {
+        } elseif('@' == $tagName){
+			$regex = '\@([a-wA-w_]*)\(([\$a-wA-w_]*)\)';
+			// $regex = '\@([a-wA-w_]*\([\$a-wA-w_]*\))';
+		} else {
             $begin  = $this->config['taglib_begin'];
             $end    = $this->config['taglib_end'];
             $single = strlen(ltrim($begin, '\\')) == 1 && strlen(ltrim($end, '\\')) == 1 ? true : false;
